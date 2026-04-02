@@ -81,7 +81,7 @@ pipeline {
                 export AWS_ACCESS_KEY_ID=$AWS_CREDS_USR
                 export AWS_SECRET_ACCESS_KEY=$AWS_CREDS_PSW
 
-                aws eks update-kubeconfig --region us-east-1 --name mycluster
+                aws eks update-kubeconfig --region us-east-1 --name saran
                 kubectl apply -f deployment.yml
                 kubectl apply -f service.yml
                 '''
