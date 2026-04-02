@@ -4,7 +4,7 @@ pipeline {
 
     environment {
         SONARQUBE_ENV = 'sq'
-        DOCKER_IMAGE = "devopsawspratice/saran"
+        DOCKER_IMAGE = "devopsawspractice/hotstar-02-04-26"
         AWS_DEFAULT_REGION = 'us-east-1'
         RECIPIENTS = 'devopsawspratice@gmail.com'
     }
