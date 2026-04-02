@@ -5,7 +5,6 @@ pipeline {
     environment {
         SONARQUBE_ENV = 'sq'
         DOCKER_IMAGE = "devopsawspratice/saran"
-        AWS_CREDS = credentials('aws-creds')
         AWS_DEFAULT_REGION = 'us-east-1'
         RECIPIENTS = 'devopsawspratice@gmail.com'
     }
@@ -78,9 +77,6 @@ pipeline {
         stage('Deploy to EKS') {
             steps {
                 sh '''
-                export AWS_ACCESS_KEY_ID=$AWS_CREDS_USR
-                export AWS_SECRET_ACCESS_KEY=$AWS_CREDS_PSW
-
                 aws eks update-kubeconfig --region us-east-1 --name saran
                 kubectl apply -f deployment.yml
                 kubectl apply -f service.yml
