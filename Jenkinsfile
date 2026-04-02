@@ -14,7 +14,7 @@ pipeline {
 
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/rajeshtutta/Hotstar-02-04-26-.git'
+                git branch: 'main', url: 'https://github.com/devopsawspratice/Hotstar-02-04-26-.git'
             }
         }
         stage('BUILD') {
