@@ -1,72 +1,93 @@
+
 pipeline {
     agent any
 
     environment {
-        DOCKER_USER     = "rajeshtutta123"            // ✅ your DockerHub username
-        IMAGE_NAME      = "java-project-hotstar-new" // ✅ project image name
-        IMAGE_TAG       = "latest"
-        CONTAINER_NAME  = "HOTSTAR-CONTAINER"
+        DOCKER_IMAGE = "rajeshtutta123/rajesh_hotstar-02-04-26"
+        AWS_CREDS = credentials('aws-creds')
+        AWS_DEFAULT_REGION = 'us-east-1'
+        RECIPIENTS = 'rajeshtutta123@gmail.com'
     }
 
     stages {
-        stage('Checkout Code') {
+
+        stage('Clone Repository') {
             steps {
                 git branch: 'main', url: 'https://github.com/rajeshtutta/Hotstar-02-04-26-.git'
             }
         }
-
-        stage('Build App') {
-            steps {
-                sh 'mvn clean package -DskipTests'
-            }
+        stage('BUILD') {
+        steps {
+            sh 'mvn clean package -DskipTests'
         }
+    }
+        stage('JENKINS TO NEXUS') {
+        steps {
+          withMaven(jdk: 'jdk21', maven: 'maven3', traceability: true) {
+             sh 'mvn deploy'
+}
+        }
+    }
 
         stage('Build Docker Image') {
             steps {
-                sh '''
-                    echo "Building Docker image..."
-                    docker build -t ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG} .
-                '''
-            }
-        }
-
-        stage('Run Container (Local Test)') {
-            steps {
-                sh '''
-                    echo "Running container locally..."
-                    docker rm -f ${CONTAINER_NAME} || true
-                    docker run -d --name ${CONTAINER_NAME} -p 8085:8080 ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}
-                    sleep 5
-                    docker logs ${CONTAINER_NAME}
-                '''
+                sh 'docker build -t $DOCKER_IMAGE:latest .'
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub_creds', usernameVariable: 'DOCKER_HUB_USER', passwordVariable: 'DOCKER_HUB_PASS')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
                     sh '''
-                        echo "Logging in to DockerHub..."
-                        echo "$DOCKER_HUB_PASS" | docker login -u "$DOCKER_HUB_USER" --password-stdin
-                        docker tag ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}
-                        docker push ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+                    echo $PASS | docker login -u $USER --password-stdin
+                    docker push $DOCKER_IMAGE:latest
+                    docker logout
                     '''
                 }
             }
         }
 
-        stage('Deploy to Docker Swarm') {
+        stage('Build') {
+            steps {
+                echo "Building..."
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo "Testing..."
+            }
+        }
+
+        stage('Deploy to EKS') {
             steps {
                 sh '''
-                    echo "Deploying to Docker Swarm..."
-                    docker service rm hotstar-service || true
-                    docker service create \
-                        --name hotstar-service \
-                        --publish 8085:8080 \
-                        --replicas 3 \
-                        ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+                export AWS_ACCESS_KEY_ID=$AWS_CREDS_USR
+                export AWS_SECRET_ACCESS_KEY=$AWS_CREDS_PSW
+
+                aws eks update-kubeconfig --region us-east-1 --name mycluster1
+                kubectl apply -f deployment.yml
+                kubectl apply -f service.yml
                 '''
             }
+        }
+    }
+
+    post {
+        success {
+            emailext(
+                subject: "Jenkins Job '${env.JOB_NAME}' Success",
+                body: "Good news! Job '${env.JOB_NAME}' (#${env.BUILD_NUMBER}) succeeded.\n\nCheck console output at ${env.BUILD_URL}",
+                to: "${RECIPIENTS}"
+            )
+        }
+
+        failure {
+            emailext(
+                subject: "Jenkins Job '${env.JOB_NAME}' Failed",
+                body: "Alert! Job '${env.JOB_NAME}' (#${env.BUILD_NUMBER}) failed.\n\nCheck console output at ${env.BUILD_URL}",
+                to: "${RECIPIENTS}"
+            )
         }
     }
 }
