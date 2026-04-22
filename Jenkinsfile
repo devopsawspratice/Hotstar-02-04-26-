@@ -1,7 +1,7 @@
 pipeline {
 agent any
 
-
+```
 tools {
     maven 'maven3'
     jdk 'jdk21'
@@ -23,9 +23,10 @@ environment {
     AWS_REGION     = 'us-east-1'
     EKS_CLUSTER    = 'saran'
 
-    // ⚠️ Hardcoded Nexus credentials (for practice only)
+    // ⚠️ For practice only
     NEXUS_USER     = 'admin'
     NEXUS_PASS     = '12345678'
+    DOCKER_PASS    = 'N@LD19Aran#'
 }
 
 stages {
@@ -38,20 +39,20 @@ stages {
 
     stage('Build (Maven)') {
         steps {
-            sh 'mvn clean package -DskipTests'
+            sh "mvn clean package -DskipTests"
         }
     }
 
     stage('Unit Test') {
         steps {
-            sh 'mvn test'
+            sh "mvn test"
         }
     }
 
     stage('SonarQube Analysis') {
         steps {
             withSonarQubeEnv("${SONARQUBE_ENV}") {
-                sh 'mvn sonar:sonar'
+                sh "mvn sonar:sonar"
             }
         }
     }
@@ -66,7 +67,7 @@ stages {
 
     stage('Upload Artifact to Nexus') {
         steps {
-            sh '''
+            sh """
             cat > settings.xml <<EOF
 ```
 
@@ -81,45 +82,44 @@ stages {
 </settings>
 EOF
 
-
+```
             mvn deploy -s settings.xml
-            '''
+            """
         }
     }
 
     stage('Build Docker Image') {
         steps {
-            sh '''
-            docker build -t $DOCKER_IMAGE -t $DOCKER_LATEST .
-            '''
+            sh """
+            docker build -t ${DOCKER_IMAGE} -t ${DOCKER_LATEST} .
+            """
         }
     }
 
     stage('Push to DockerHub') {
         steps {
-            sh '''
-            echo "Login to DockerHub"
-            docker login -u devopsawspratice -p N@LD19Aran#
-            docker push $DOCKER_IMAGE
-            docker push $DOCKER_LATEST
+            sh """
+            echo "${DOCKER_PASS}" | docker login -u ${DOCKER_USER} --password-stdin
+            docker push ${DOCKER_IMAGE}
+            docker push ${DOCKER_LATEST}
             docker logout
-            '''
+            """
         }
     }
 
     stage('Deploy to EKS') {
         steps {
-            sh '''
-            aws eks update-kubeconfig --region $AWS_REGION --name $EKS_CLUSTER
+            sh """
+            aws eks update-kubeconfig --region ${AWS_REGION} --name ${EKS_CLUSTER}
 
             cp deployment.yml /tmp/deploy.yml
-            sed -i "s|IMAGE_PLACEHOLDER|$DOCKER_IMAGE|g" /tmp/deploy.yml
+            sed -i "s|IMAGE_PLACEHOLDER|${DOCKER_IMAGE}|g" /tmp/deploy.yml
 
             kubectl apply -f /tmp/deploy.yml
             kubectl apply -f service.yml
 
             kubectl rollout status deployment/hotstar
-            '''
+            """
         }
     }
 }
@@ -132,6 +132,6 @@ post {
         echo "Pipeline FAILED ❌"
     }
 }
-
+```
 
 }
