@@ -106,5 +106,21 @@ pipeline {
         }
     }
 
+    post {
+        success {
+            emailext(
+                subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: "Build succeeded!\n${env.BUILD_URL}",
+                to: "${RECIPIENTS}"
+            )
+        }
 
+        failure {
+            emailext(
+                subject: "FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: "Build failed!\n${env.BUILD_URL}",
+                to: "${RECIPIENTS}"
+            )
+        }
+    }
 }
