@@ -1,7 +1,7 @@
 pipeline {
 agent any
 
-```
+
 tools {
     maven 'maven3'
     jdk 'jdk21'
@@ -69,7 +69,7 @@ stages {
         steps {
             sh """
             cat > settings.xml <<EOF
-```
+
 
 <settings>
   <servers>
@@ -82,7 +82,7 @@ stages {
 </settings>
 EOF
 
-```
+
             mvn deploy -s settings.xml
             """
         }
@@ -132,6 +132,6 @@ post {
         echo "Pipeline FAILED ❌"
     }
 }
-```
+
 
 }
