@@ -81,7 +81,7 @@ stages {
 </settings>
 EOF
 
-```
+
             mvn deploy -s settings.xml
             '''
         }
