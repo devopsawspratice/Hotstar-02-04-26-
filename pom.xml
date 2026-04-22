@@ -15,7 +15,7 @@
         <!-- ✅ SonarQube properties -->
         <sonar.projectKey>myapp</sonar.projectKey>
         <sonar.projectName>myapp</sonar.projectName>
-        <sonar.host.url>http://52.66.200.18:9000</sonar.host.url>
+        <sonar.host.url>http://54.210.29.230:9000</sonar.host.url>
         <!-- This picks token from Jenkins environment variable -->
         <sonar.login>${env.SONAR_AUTH_TOKEN}</sonar.login>
     </properties>
