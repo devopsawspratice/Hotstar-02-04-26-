@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: hotstarcont
-        image: devopsawspratice/hotstar-02-04-26:27
+        image: devopsawspratice/hotstar-02-04-26:30
         ports:
         - containerPort: 8080
