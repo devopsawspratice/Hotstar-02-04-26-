@@ -1,7 +1,7 @@
 pipeline {
 agent any
 
-```
+
 tools {
     maven 'maven3'
     jdk 'jdk21'
@@ -132,6 +132,6 @@ post {
         echo "Pipeline FAILED ❌"
     }
 }
-```
+
 
 }
