@@ -119,7 +119,7 @@ EOF
             kubectl apply -f service.yml
 
             kubectl rollout restart deployment hotstardeploy
-            kubectl rollout status deployment/hotstardeploy
+            kubectl rollout status deployment hotstardeploy
             """
         }
     }
